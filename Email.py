@@ -1,3 +1,6 @@
+
+import re
+from html2text import html2text
 from peewee import *
 
 db = SqliteDatabase('emails.db')
@@ -19,3 +22,10 @@ class Email(Model):
 
   def __str__(self):
     return "Message %s\nTo %s\nFrom %s" % (self.message_id, self.message_to, self.message_from)
+
+  def text(self):
+    if self.message_data: # not in parts
+        return html2text(self.message_data)
+    else: # in parts
+        return self.message_data_part0
+
