@@ -1,8 +1,11 @@
 import re
-from html2text import html2text
 from peewee import *
+import html2text
 
 db = SqliteDatabase('emails.db')
+h = html2text.HTML2Text()
+h.ignore_links = True
+h.ignore_images = True
 
 class Email(Model):
   message_id = CharField(null=True, default=None)
@@ -24,7 +27,7 @@ class Email(Model):
 
   def text(self):
     if self.message_data: # not in parts
-        return html2text(self.message_data)
+        return h.handle(self.message_data)
     else: # in parts
         return self.message_data_part0
 
