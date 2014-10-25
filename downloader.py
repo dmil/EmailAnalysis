@@ -63,8 +63,7 @@ def get_party(message_from):
   elif email_address == 'volunteer@action.gop.com':
     return "REP"
   else:
-    print "party not identified for '%s' in email %s" % (email_address, email.get('message_id'))
-    return None
+    raise Exception("party not identified for '%s' " % (email_address))
 
 def initial_parse(message):
   # extract values from email header
@@ -137,6 +136,10 @@ def parse_message(message):
     'party' : get_party(variables['message_from'])
   }
   variables.update(calculated_variables)
+  return variables
+
+def parse_message_senate(message):
+  variables = initial_parse(message)
   return variables
 
 def save_to_file(message):
