@@ -1,11 +1,13 @@
-email-data
-==========
+EmailAnalysis
+=============
+A toolkit to use the gmail API to download and analyze emails
 
-python package that provides tools for using google's gmail API to download and analyze emails
+1. Install packages
+```
+pip install --upgrade google-api-python-client
+```
 
-Use
-===
-1. Download emails to /emails folder
+2. Download emails to /emails folder
 ```
 python downloader.py
 ```
