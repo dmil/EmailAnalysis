@@ -32,6 +32,10 @@ emailsdir = rootdir + "/emails/"
 db = SqliteDatabase('emails.db')
 db.connect()
 
-for email in Email.select(Email.message_from).distinct().select():
-  print email.message_from
+# # Loop through emails
+# for email in Email.select():
+#   print email.party
+
+print Email.select().where(Email.message_data != None).get().text()
+
 db.close()
