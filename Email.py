@@ -32,7 +32,7 @@ class Email(Model):
         return self.message_data_part0
 
   def politicalnewsbot_link(self):
-    return "https://mail.google.com/mail/u/inbox/%s?authuser=politicalnewsbot@gmail.com" % self.message_id
+    return "https://mail.google.com/mail/u/1/#inbox/%s?authuser=politicalnewsbotnewyork@gmail.com" % self.message_id
 
   def politicalnewsbotnewyork_link(self):
     return "https://mail.google.com/mail/u/inbox/%s?authuser=politicalnewsbotnewyork@gmail.com" % self.message_id
