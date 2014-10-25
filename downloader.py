@@ -66,7 +66,7 @@ def get_party(message_from):
     print "party not identified for '%s' in email %s" % (email_address, email.get('message_id'))
     return None
 
-def parse_message(message):
+def initial_parse(message):
   # extract values from email header
   keys = map(lambda x: x['name'],message['payload']['headers'])
   values = map(lambda x: x['value'],message['payload']['headers'])
@@ -119,7 +119,7 @@ def parse_message(message):
   if not (message_data or message_data_part0 or message_data_part1):
     raise Exception("Message %s has no data and no parts." % message_id)
 
-  extracted_variables = {
+  return {
     'message_id' : message_id,
     'message_labels' : message_labels,
     'message_to' : message_to,
@@ -131,11 +131,12 @@ def parse_message(message):
     'message_data_part1' : message_data_part1
     }
 
+def parse_message(message):
+  variables = initial_parse(message)
   calculated_variables = {
-    'party' : get_party(message_from)
-    }
-
-  variables = dict(extracted_variables.items() + calculated_variables.items())
+    'party' : get_party(variables['message_from'])
+  }
+  variables.update(calculated_variables)
   return variables
 
 def save_to_file(message):
