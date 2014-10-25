@@ -11,6 +11,7 @@ from collections import Counter
 import os.path
 import shutil
 import logging
+import re
 
 from blessings import Terminal
 
@@ -50,6 +51,20 @@ def get_message(message_id):
 
 def decode(text):
   return base64.urlsafe_b64decode(str(text.encode('ASCII')))
+
+def get_party(message_from):
+  match = re.search('(.*) <(.*)>', message_from)
+
+  name = match.group(1)
+  email_address = match.group(2)
+
+  if email_address in ['democraticparty@democrats.org', 'noreply@democrats.org']:
+    return "DEM"
+  elif email_address == 'volunteer@action.gop.com':
+    return "REP"
+  else:
+    print "party not identified for '%s' in email %s" % (email_address, email.get('message_id'))
+    return None
 
 def parse_message(message):
   # extract values from email header
@@ -104,7 +119,7 @@ def parse_message(message):
   if not (message_data or message_data_part0 or message_data_part1):
     raise Exception("Message %s has no data and no parts." % message_id)
 
-  variables = {
+  extracted_variables = {
     'message_id' : message_id,
     'message_labels' : message_labels,
     'message_to' : message_to,
@@ -113,9 +128,14 @@ def parse_message(message):
     'message_date' : message_date,
     'message_data' : message_data,
     'message_data_part0' : message_data_part0,
-    'message_data_part1' : message_data_part1,
+    'message_data_part1' : message_data_part1
     }
 
+  calculated_variables = {
+    'party' : get_party(message_from)
+    }
+
+  variables = dict(extracted_variables.items() + calculated_variables.items())
   return variables
 
 def save_to_file(message):
