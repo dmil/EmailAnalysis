@@ -6,24 +6,26 @@ Tools to download emails from gmail API and save them as JSON files.
 import httplib2
 import base64
 import json
-from pprint import pprint
-from collections import Counter
 import os.path
 import shutil
-import logging
 import re
+import email
+import sys
 
+from pprint import pprint
+from collections import Counter
+from dateutil.parser import parse
 from blessings import Terminal
 
+from Utils import logger
+from Utils import html_to_text
 from Email import Email
+from SenderMetadata import SenderMetadata
 
 from peewee import *
 
 import authenticator
 
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.StreamHandler())
-logger.setLevel(logging.DEBUG)
 gmail_service = authenticator.authenticate_gmail_service()
 t = Terminal()
 
@@ -46,77 +48,95 @@ def list_message_ids():
   message_ids = map(lambda x: x['id'], messages_json)
   return message_ids
 
-def get_message(message_id):
-  return gmail_service.users().messages().get(userId='me', id=message_id, format='full').execute()
-
 def decode(text):
   return base64.urlsafe_b64decode(str(text.encode('ASCII')))
 
-def get_party(message_from):
-  match = re.search('(.*) <(.*)>', message_from)
+def parse_singlepart_text_message(msg):
 
-  name = match.group(1)
-  email_address = match.group(2)
+  if msg.is_multipart():
+    raise Exception("Cannot run function parse_singlepart_text_message on a multipart message.")
 
-  if email_address in ['democraticparty@democrats.org', 'noreply@democrats.org']:
-    return "DEM"
-  elif email_address == 'volunteer@action.gop.com':
-    return "REP"
+  if msg.get_content_type() in ['image/jpeg', 'image/png']:
+    return ""
+
+  charset = msg.get_content_charset()
+  if charset is None:
+    raise Exception("Unknown charset")
+
+  if msg.get_content_type() == 'text/plain':
+    text = unicode(msg.get_payload(decode=True), str(charset), "ignore")
+  elif msg.get_content_type() == 'text/html':
+    html = unicode(msg.get_payload(decode=True), str(charset), "ignore")
+    text = html_to_text(html.strip())
   else:
-    raise Exception("party not identified for '%s' " % (email_address))
+    raise Exception("Cannot parse content of type %s" % msg.get_content_type())
 
-def initial_parse(message):
-  # extract values from email header
-  keys = map(lambda x: x['name'],message['payload']['headers'])
-  values = map(lambda x: x['value'],message['payload']['headers'])
-  headers = dict(zip(keys, values))
+  return text.strip()
 
-  message_id = message.get('id')
+def get_text(email_object):
+  """
+  Decode email body.
+  """
+
+  msg = email_object
+  content_type = msg.get_content_type()
+  payload = msg.get_payload()
+
+  # print "blah"
+  print content_type
+
+  if msg.is_multipart() and content_type == 'multipart/mixed' or content_type == 'multipart/related':
+    text = ""
+    for part in payload:
+      text += get_text(part)
+    return text
+  elif msg.is_multipart() and content_type == 'multipart/alternative':
+    content_types = [x.get_content_type() for x in payload]
+    if sorted(content_types) == ['text/html']:
+      html = payload[0]
+      return parse_singlepart_text_message(html)
+    if sorted(content_types) == ['text/html', 'text/plain']:
+      html = filter(lambda x: x.get_content_type() == "text/html", payload)[0]
+      return parse_singlepart_text_message(html)
+    elif sorted(content_types) == ['multipart/related', 'text/plain']:
+      multi = filter(lambda x: x.get_content_type() == "multipart/related", payload)[0]
+      return get_text(multi)
+    else:
+      raise Exception("multipart/alternative with Unexpected content_types: " + ", ".join(content_types))
+    return parse_singlepart_text_message(html)
+  elif not msg.is_multipart():
+    return parse_singlepart_text_message(msg)
+  else:
+    raise Exception("haven't accounted for this content type " + content_type)
+
+def get_gmail_message(message_id):
+  return gmail_service.users().messages().get(userId='me', id=message_id, format='raw').execute()
+
+def parse_message(gmail_message):
+  raw = gmail_message.get('raw')
+  # threadId = gmail_message.get('threadId')
+  # history_id = gmail_message.get('history_id')
+  # size_estimate = gmail_message.get('sizeEstimate')
+  # snippet = gmail_message.get('snippet')
+
+  email_object = email.message_from_string(decode(raw))
+
+  message_id = gmail_message.get('id')
   if not message_id: print t.red("No message_id")
-  message_labels = message.get('labelIds')
+  message_labels = gmail_message.get('labelIds')
   if not message_labels: print t.red("No message_labels")
-  message_to = headers.get('Delivered-To')
+  message_to = email_object['To']
   if not message_to: print t.red("No message_to")
-  message_from = headers.get('From')
+  message_from = email_object['From']
   if not message_from: print t.red("No message_from")
-  message_subject = headers.get('Subject')
+  message_subject = email_object['Subject']
   if not message_subject: print t.red("No message_subject")
-  message_date = headers.get('Date')
+  message_date = parse(email_object['date'])
   if not message_date: print t.red("No message_date")
 
-  # Assumptions:
-  # Either you get the body in the payload
-  # or the body is in parts in the payload.
-  #
-  # parts[0] = plaintext (without images)
-  # parts[1] = HTML (includes images)
-  # Body data is URLBase64 Encoded
-
-  message_payload = message.get('payload')
-
-  message_body = message_payload.get('body') if message_payload else None
-  message_data = decode(message_body['data']) if message_body.get('data') else None
-
-  message_parts = message_payload.get('parts') if message_payload else None
-  if message_parts:
-    message_data_part0 = message_parts[0]['body']['data']
-    message_data_part0 = decode(message_data_part0)
-
-    message_data_part1 = message_parts[1]['body']['data']
-    message_data_part1 = decode(message_data_part1)
-  else:
-    message_data_part0 = None
-    message_data_part1 = None
-
-  ## Raise exceptions if assumptions are incorrect
-  if message_parts and len(message_parts) > 2:
-    raise Exception("Message %s has more than 2 parts. Assumption about how body and parts works is invalid." % message_id)
-
-  if not message_parts and not message_body:
-    raise Exception("Message %s has no body and no parts. Assumption about how body and parts works is invalid." % message_id)
-
-  if not (message_data or message_data_part0 or message_data_part1):
-    raise Exception("Message %s has no data and no parts." % message_id)
+  text = get_text(email_object)
+  if not text:
+    print t.red("No text")
 
   return {
     'message_id' : message_id,
@@ -125,61 +145,56 @@ def initial_parse(message):
     'message_from' : message_from,
     'message_subject' : message_subject,
     'message_date' : message_date,
-    'message_data' : message_data,
-    'message_data_part0' : message_data_part0,
-    'message_data_part1' : message_data_part1
+    'serialized_json': str(gmail_message),
+    'text' : text
     }
 
-def parse_message(message):
-  variables = initial_parse(message)
-  calculated_variables = {
-    'party' : get_party(variables['message_from'])
-  }
-  variables.update(calculated_variables)
-  return variables
-
-def parse_message_senate(message):
-  variables = initial_parse(message)
-  return variables
-
-def save_to_file(message):
-  """Takes raw or parsed message and saves to json file in emails/ directory."""
-  filepath = 'emails/' + message['message_id'] + '.json'
-
-  exists = os.path.exists(filepath)
-  with open(filepath, 'w') as emailfile:
-    json.dump(parsed_message, emailfile, indent=2)
-    if not exists:
-      print "Created file " + emailfile.name
-    else:
-      print "Updated file " + emailfile.name
-
-def save_to_database(parsed_message):
-  email = Email.create(**parsed_message)
-  logger.debug("Saved %s to database", email.message_id)
+def download_email(message_id):
+  raw_message = get_gmail_message(message_id)
+  parsed_message = parse_message(raw_message)
+  try:
+    Email.get(Email.message_id == parsed_message['message_id'])
+    print "Found email with id %s. Did not create" % parsed_message['message_id']
+  except DoesNotExist:
+    e = Email.create(**parsed_message)
+    sender_email_address = e.get_sender_email()
+    # if '@' not in sender_email_address: import pdb; pdb.set_trace()
+    s = SenderMetadata.get_or_create(
+      email_address = sender_email_address,
+      email_url = sender_email_address.split('@')[1])
+    e.sender = s
+    e.save()
 
 def download_all_to_database():
-  if os.path.exists('emails.db'):
-    os.remove('emails.db')
-    logger.info("Deleted database 'emails.db'")
-  db = SqliteDatabase('emails.db')
-  logger.info("Created database 'emails.db'")
-  Email.create_table()
+  # # Delete 'emails.db' sqlite database
+  # if os.path.exists('emails.db'):
+  #   os.remove('emails.db')
+  #   logger.info("Deleted database 'emails.db'")
 
+  # # Re-create 'emails.db' sqlite database
+  # db = SqliteDatabase('emails.db')
+  # logger.info("Created database 'emails.db'")
+  # Email.create_table()
+  # SenderMetadata.create_table()
+
+  # Download Emails
   logger.info("Downloading emails to database.")
   for message_id in list_message_ids():
-    raw_message = get_message(message_id)
-    parsed_message = parse_message(raw_message)
-    save_to_database(parsed_message)
-
-def download_all_to_files():
-  shutil.rmtree('emails/')
-  os.mkdir('emails/')
-
-  for message_id in list_message_ids():
-    raw_message = get_message(message_id)
-    parsed_message = parse_message(raw_message)
-    save_to_file(parsed_message)
+    try:
+      download_email(message_id)
+    except Exception, e:
+      print t.red("Error downloading message: %s" % message_id)
+      # print t.red(e)
+      raise
+    print ""
 
 if __name__ == '__main__':
   download_all_to_database()
+  # messages = ['14926044f4fed036', '14923a815ac3deb2', '1484f23d1fe924b0']
+  # message_id = '1484f23d1fe924b0'
+  # try:
+  #   download_email(message_id)
+  # except Exception, e:
+  #   print t.red("FOUND ERROR ! %s" % message_id)
+  #   print t.red( "Unexpected error: %s" % e )
+  #   raise

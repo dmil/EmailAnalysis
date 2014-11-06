@@ -3,3 +3,4 @@ keys.json
 *.storage
 emails/*.json
 *.pyc
+*.db
