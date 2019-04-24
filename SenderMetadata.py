@@ -40,7 +40,7 @@ class SenderMetadata(Model):
       self.state = other_item_with_same_email_url.state
 
     if not (self.party or self.state):
-      print t.yellow(self.email_url)
+      print(t.yellow(self.email_url))
 
     if not self.party:
       acceptable_answers = ["d", "r", "i"]

@@ -14,7 +14,7 @@ import json
 from apiclient.discovery import build
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
-from oauth2client.tools import run
+from oauth2client.tools import run_flow
 
 def authenticate_gmail_service():
   """
@@ -40,7 +40,7 @@ def authenticate_gmail_service():
   # Try to retrieve credentials from storage or run the flow to generate them
   credentials = STORAGE.get()
   if credentials is None or credentials.invalid:
-    credentials = run(flow, STORAGE, http=http)
+    credentials = run_flow(flow, STORAGE, http=http)
 
   # Authorize the httplib2.Http object with our credentials
   http = credentials.authorize(http)
