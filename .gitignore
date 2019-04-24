@@ -5,3 +5,4 @@ emails/*.json
 *.pyc
 *.db
 .DS_Store
+.venv/
