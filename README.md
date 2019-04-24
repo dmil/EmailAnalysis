@@ -15,3 +15,13 @@ pip install gflags
 ```
 python downloader.py
 ```
+
+## STATUS
+
+Not working, oauth library has been depracated
+
+### TODO
+
+- Switch authentication to use `google-auth` library: https://google-auth.readthedocs.io/en/latest/user-guide.html
+- Improve README
+- Add a python notebook layer for analysis
