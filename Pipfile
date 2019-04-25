@@ -15,6 +15,11 @@ html2text = "*"
 peewee = "*"
 authenticator = "*"
 oauth2client = "*"
+jupyter = "*"
+notebook = "*"
+matplotlib = "*"
+scikit-learn = "*"
+mpld3 = "*"
 
 [requires]
 python_version = "3.7"
