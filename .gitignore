@@ -1,5 +1,6 @@
 *.com.json
 keys.json
+credentials.json
 *.storage
 emails/*.json
 *.pyc
