@@ -40,12 +40,12 @@ class SenderMetadata(Model):
       self.state = other_item_with_same_email_url.state
 
     if not (self.party or self.state):
-      print t.yellow(self.email_url)
+      print(t.yellow(self.email_url))
 
     if not self.party:
       acceptable_answers = ["d", "r", "i"]
-      self.party = get_answer("Enter Party (d/r/i)", acceptable_answers)
-      # self.party = "d"
+      # self.party = get_answer("Enter Party (d/r/i)", acceptable_answers)
+      self.party = "d"
 
     if not self.state:
       acceptable_answers = ["ak", "al", "ar", "az", "ca",
@@ -58,9 +58,9 @@ class SenderMetadata(Model):
       negations = ["-1", "none", "n"]
       acceptable_answers += negations
 
-      state = get_answer("Enter State Abbreviation", acceptable_answers)
-      self.state = state.lower() if state in negations else "-1"
-      # self.state = "-1"
+      # state = get_answer("Enter State Abbreviation", acceptable_answers)
+      # self.state = state.lower() if state in negations else "-1"
+      self.state = "-1"
 
     logger.debug("Filled SenderMetadata for %s", self.email_address)
     self.save()
