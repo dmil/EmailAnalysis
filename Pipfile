@@ -14,7 +14,7 @@ blessings = "*"
 html2text = "*"
 peewee = "*"
 authenticator = "*"
-google-auth = "*"
+oauth2client = "*"
 
 [requires]
 python_version = "3.7"
