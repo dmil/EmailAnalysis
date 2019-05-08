@@ -6,5 +6,7 @@ setup(name='emailanalysis',
       url='https://github.com/dmil/EmailAnalysis',
       author='Dhrumil Mehta',
       author_email='dhrumil.mehta@gmail.com',
-      packages=['emailanalysis']
+      packages=['emailanalysis'],
+      install_requires=['httplib2','dateutils','blessings','html2text',
+      	'peewee','authenticator','oauth2client', 'google-api-python-client']
       )

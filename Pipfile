@@ -8,19 +8,12 @@ pylint = "*"
 autopep8 = "*"
 
 [packages]
-httplib2 = "*"
-dateutils = "*"
-blessings = "*"
-html2text = "*"
-peewee = "*"
-authenticator = "*"
-oauth2client = "*"
 jupyter = "*"
 notebook = "*"
 matplotlib = "*"
 scikit-learn = "*"
 mpld3 = "*"
-google-api-python-client = "*"
+emailanalysis = {editable = true,path = "."}
 
 [requires]
 python_version = "3.7"
