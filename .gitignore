@@ -7,3 +7,4 @@ emails/*.json
 *.db
 .DS_Store
 .venv/
+.vscode/
