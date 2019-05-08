@@ -6,5 +6,5 @@ setup(name='emailanalysis',
       url='https://github.com/dmil/EmailAnalysis',
       author='Dhrumil Mehta',
       author_email='dhrumil.mehta@gmail.com',
-      packages=['.']
+      packages=['emailanalysis']
       )
