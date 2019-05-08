@@ -18,8 +18,18 @@ A toolkit to use the gmail API to download and analyze emails
 	```
 	python downloader.py
 	```
-	
+
 5. Run the jupyter notebook for analysis
 	```
 	pipenv run jupyter notebook EmailAnalysis.ipynb
 	```
+
+## Installing in another project
+
+#### Install from master
+`pipenv install -e git+git@github.com/dmil/EmailAnalysis.git#egg=emailanalysis`
+
+#### Install from commit
+`pipenv install -e git+git@github.com/dmil/EmailAnalysis.git@COMMIT_SHA#egg=emailanalysis`
+
+where `COMMIT_SHA` is the hash of the commit you want to install from
