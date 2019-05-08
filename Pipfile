@@ -20,6 +20,7 @@ notebook = "*"
 matplotlib = "*"
 scikit-learn = "*"
 mpld3 = "*"
+google-api-python-client = "*"
 
 [requires]
 python_version = "3.7"
