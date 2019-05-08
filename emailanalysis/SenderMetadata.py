@@ -2,8 +2,7 @@ import re
 from blessings import Terminal
 from peewee import *
 
-from Utils import logger
-from Utils import get_answer
+from emailanalysis.utils import logger, get_answer
 
 t = Terminal()
 db = SqliteDatabase('emails.db')

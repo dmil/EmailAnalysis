@@ -17,10 +17,9 @@ from collections import Counter
 from dateutil.parser import parse
 from blessings import Terminal
 
-from Utils import logger
-from Utils import html_to_text
-from Email import Email
-from SenderMetadata import SenderMetadata
+from emailanalysis.Utils import logger, html_to_text
+from emailanalysis.Email import Email
+from emailanalysis.SenderMetadata import SenderMetadata
 
 from peewee import *
 
