@@ -19,17 +19,19 @@ gmail_service = authenticator.authenticate_gmail_service()
 # Print ID for each thread
 threads = gmail_service.users().threads().list(userId='me').execute()
 if threads['threads']:
-  for thread in threads['threads']:
-    print 'Thread ID: %s' % (thread['id'])
+    for thread in threads['threads']:
+        print 'Thread ID: %s' % (thread['id'])
 
 # Print labels
 labels = gmail_service.users().labels().list(userId='me').execute()
 for label in labels['labels']:
-  print label
+    print label
 
 # Print particular label
-promotions_label = gmail_service.users().labels().get(userId='me', id='CATEGORY_PROMOTIONS').execute()
-inbox_label = gmail_service.users().labels().get(userId='me', id='INBOX').execute()
+promotions_label = gmail_service.users().labels().get(
+    userId='me', id='CATEGORY_PROMOTIONS').execute()
+inbox_label = gmail_service.users().labels().get(
+    userId='me', id='INBOX').execute()
 pprint(inbox_label)
 
 # Print one page of messages
@@ -41,7 +43,8 @@ request = gmail_service.users().messages().list(userId='me')
 response = request.execute()
 messages = response['messages']
 while response.get('nextPageToken'):
-  request = gmail_service.users().messages().list_next(previous_request=request, previous_response=response)
-  response = request.execute()
-  messages += response['messages']
+    request = gmail_service.users().messages().list_next(
+        previous_request=request, previous_response=response)
+    response = request.execute()
+    messages += response['messages']
 pprint(messages)

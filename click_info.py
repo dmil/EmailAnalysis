@@ -1,9 +1,10 @@
 from mpld3 import plugins
 from mpld3 import utils
 
+
 class ClickInfo(plugins.PluginBase):
     """Plugin for getting info on click"""
-    
+
     JAVASCRIPT = """
     mpld3.register_plugin("clickinfo", ClickInfo);
     ClickInfo.prototype = Object.create(mpld3.Plugin.prototype);
@@ -12,7 +13,7 @@ class ClickInfo(plugins.PluginBase):
     function ClickInfo(fig, props){
         mpld3.Plugin.call(this, fig, props);
     };
-    
+
     ClickInfo.prototype.draw = function(){
         var obj = mpld3.get_element(this.props.id);
         obj.elements().on("mousedown",
@@ -24,4 +25,4 @@ class ClickInfo(plugins.PluginBase):
         self.dict_ = {"type": "clickinfo",
                       "id": utils.get_id(points),
                       "urls": urls
-                     }
+                      }
