@@ -17,7 +17,7 @@ from collections import Counter
 from dateutil.parser import parse
 from blessings import Terminal
 
-from emailanalysis.Utils import logger, html_to_text
+from emailanalysis.utils import logger, html_to_text
 from emailanalysis.Email import Email
 from emailanalysis.SenderMetadata import SenderMetadata
 
