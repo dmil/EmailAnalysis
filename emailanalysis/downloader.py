@@ -17,16 +17,15 @@ from collections import Counter
 from dateutil.parser import parse
 from blessings import Terminal
 
-from Utils import logger
-from Utils import html_to_text
-from Email import Email
-from SenderMetadata import SenderMetadata
+from emailanalysis.utils import logger, html_to_text
+from emailanalysis.Email import Email
+from emailanalysis.SenderMetadata import SenderMetadata
 
 from peewee import *
 
-import authenticator
+from emailanalysis.authenticator import authenticate_gmail_service
 
-gmail_service = authenticator.authenticate_gmail_service()
+gmail_service = authenticate_gmail_service()
 t = Terminal()
 
 

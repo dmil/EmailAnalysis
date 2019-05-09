@@ -24,8 +24,8 @@ from sklearn.datasets.base import Bunch
 from sklearn.cross_validation import cross_val_score
 
 from peewee import *
-from Email import Email
-from SenderMetadata import SenderMetadata
+from emailanalysis.Email import Email
+from emailanalysis.SenderMetadata import SenderMetadata
 
 t = Terminal()
 rootdir = os.path.realpath(os.path.dirname(__file__))

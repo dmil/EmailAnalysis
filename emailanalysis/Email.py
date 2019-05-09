@@ -1,8 +1,8 @@
 import re
 from peewee import *
 
-from Utils import logger
-from SenderMetadata import SenderMetadata
+from emailanalysis.utils import logger
+from emailanalysis.SenderMetadata import SenderMetadata
 
 db = SqliteDatabase('emails.db')
 
