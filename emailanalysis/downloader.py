@@ -23,7 +23,7 @@ from emailanalysis.SenderMetadata import SenderMetadata
 
 from peewee import *
 
-import authenticator
+import emailanalysis.authenticator
 
 gmail_service = authenticator.authenticate_gmail_service()
 t = Terminal()
