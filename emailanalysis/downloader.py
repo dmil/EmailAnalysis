@@ -102,9 +102,6 @@ def get_text(email_object):
     content_type = msg.get_content_type()
     payload = msg.get_payload()
 
-    # print "blah"
-    print(content_type)
-
     if msg.is_multipart() and (content_type == 'multipart/mixed' or content_type == 'multipart/related'):
         text = ""
         for part in payload:
@@ -150,26 +147,26 @@ def parse_message(gmail_message):
 
     message_id = gmail_message.get('id')
     if not message_id:
-        print(t.red("No message_id"))
+        logger.error(t.red("No message_id"))
     message_labels = gmail_message.get('labelIds')
     if not message_labels:
-        print(t.red("No message_labels"))
+        logger.error(t.red("No message_labels"))
     message_to = email_object['To']
     if not message_to:
-        print(t.red("No message_to"))
+        logger.error(t.red("No message_to"))
     message_from = email_object['From']
     if not message_from:
-        print(t.red("No message_from"))
+        logger.error(t.red("No message_from"))
     message_subject = email_object['Subject']
     if not message_subject:
-        print(t.red("No message_subject"))
+        logger.error(t.red("No message_subject"))
     message_date = parse(email_object['date'])
     if not message_date:
-        print(t.red("No message_date"))
+        logger.error(t.red("No message_date"))
 
     text = get_text(email_object)
     if not text:
-        print(t.red("No text"))
+        logger.error(t.red("No text"))
 
     return {
         'message_id': message_id,
@@ -221,8 +218,8 @@ def download_all_to_database():
         try:
             download_email(message_id)
         except Exception as e:
-            print(t.red("Error downloading message: %s" % message_id))
-            print(t.red(str(e)))
+            logger.error(t.red("Error downloading message: %s" % message_id))
+            logger.error(t.red(str(e)))
             raise
         logger.info("")
 
@@ -234,6 +231,6 @@ if __name__ == '__main__':
     # try:
     #   download_email(message_id)
     # except Exception, e:
-    #   print(t.red("FOUND ERROR ! %s" % message_id))
-    #   print(t.red( "Unexpected error: %s" % e ))
+    #   logger.error(t.red("FOUND ERROR ! %s" % message_id))
+    #   logger.error(t.red( "Unexpected error: %s" % e ))
     #   raise
