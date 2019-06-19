@@ -11,10 +11,12 @@ import shutil
 import re
 import email
 import sys
+import logging
 
 from pprint import pprint
 from collections import Counter
 from dateutil.parser import parse
+from datetime import datetime
 from blessings import Terminal
 
 from emailanalysis.utils import logger, html_to_text
@@ -28,6 +30,17 @@ from emailanalysis.authenticator import authenticate_gmail_service
 gmail_service = authenticate_gmail_service()
 t = Terminal()
 
+logfile_path = 'download.log'
+
+# Delete old logfile
+if os.path.exists(logfile_path):
+    os.remove(logfile_path)
+    print(f"Deleted logfile '{logfile_path}'")
+
+# Setup logger to new file
+file_handler = logging.FileHandler(logfile_path)
+file_handler.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
 
 def list_message_ids():
     """
@@ -92,13 +105,14 @@ def get_text(email_object):
     # print "blah"
     print(content_type)
 
-    if msg.is_multipart() and content_type == 'multipart/mixed' or content_type == 'multipart/related':
+    if msg.is_multipart() and (content_type == 'multipart/mixed' or content_type == 'multipart/related'):
         text = ""
         for part in payload:
-            text += get_text(part)
+            text += get_text(part) + '\n' # Combine the text of each part separated by '\n'
         return text
     elif msg.is_multipart() and content_type == 'multipart/alternative':
         content_types = [x.get_content_type() for x in payload]
+        logger.debug(f"Detected {content_type} containing: {sorted(content_types)}")
         if sorted(content_types) == ['text/html']:
             html = payload[0]
             return parse_singlepart_text_message(html)
@@ -188,6 +202,8 @@ def download_email(message_id):
 
 
 def download_all_to_database():
+    logger.info(f"Starting download at {datetime.now()}")
+
     # Delete 'emails.db' sqlite database
     if os.path.exists('emails.db'):
         os.remove('emails.db')
@@ -208,7 +224,7 @@ def download_all_to_database():
             print(t.red("Error downloading message: %s" % message_id))
             print(t.red(str(e)))
             raise
-        print("")
+        logger.info("")
 
 
 if __name__ == '__main__':
