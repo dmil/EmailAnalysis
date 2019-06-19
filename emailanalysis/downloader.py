@@ -147,26 +147,26 @@ def parse_message(gmail_message):
 
     message_id = gmail_message.get('id')
     if not message_id:
-        logger.error(t.red("No message_id"))
+        logger.warn(t.red("No message_id"))
     message_labels = gmail_message.get('labelIds')
     if not message_labels:
-        logger.error(t.red("No message_labels"))
+        logger.warn(t.red("No message_labels"))
     message_to = email_object['To']
     if not message_to:
-        logger.error(t.red("No message_to"))
+        logger.warn(t.red("No message_to"))
     message_from = email_object['From']
     if not message_from:
-        logger.error(t.red("No message_from"))
+        logger.warn(t.red("No message_from"))
     message_subject = email_object['Subject']
     if not message_subject:
-        logger.error(t.red("No message_subject"))
+        logger.warn(t.red("No message_subject"))
     message_date = parse(email_object['date'])
     if not message_date:
-        logger.error(t.red("No message_date"))
+        logger.warn(t.red("No message_date"))
 
     text = get_text(email_object)
     if not text:
-        logger.error(t.red("No text"))
+        logger.warn(t.red("No text"))
 
     return {
         'message_id': message_id,
