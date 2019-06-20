@@ -18,10 +18,12 @@ from collections import Counter
 from dateutil.parser import parse
 from datetime import datetime
 from blessings import Terminal
+from bs4 import BeautifulSoup
 
-from emailanalysis.utils import logger, html_to_text
+from emailanalysis.utils import logger, html_to_text, get_text_from_image_url
 from emailanalysis.Email import Email
 from emailanalysis.SenderMetadata import SenderMetadata
+from emailanalysis.Image import Image
 
 from peewee import *
 
@@ -82,9 +84,10 @@ def parse_singlepart_text_message(msg):
         raise Exception("Unknown charset")
 
     if msg.get_content_type() == 'text/plain':
+        # TODO: Is the encoding and decoding okay? Haven't had a test case of this yet I don't think.
         text = str(msg.get_payload(decode=True), str(charset), "ignore")
     elif msg.get_content_type() == 'text/html':
-        html = str(msg.get_payload(decode=True), str(charset), "ignore")
+        html = msg.get_payload(decode=True)
         text = html_to_text(html.strip())
     else:
         raise Exception("Cannot parse content of type %s" %
@@ -92,6 +95,21 @@ def parse_singlepart_text_message(msg):
 
     return text.strip()
 
+def get_html(email_object):
+    """
+    Return HTML of email if available
+    """
+    msg = email_object
+    content_type = msg.get_content_type()
+    if msg.is_multipart():
+        for part in msg.get_payload():
+            if part.is_multipart() or part.get_content_type() == 'text/html':
+                return get_html(part)
+
+    if content_type == 'text/html':
+        html = msg.get_payload(decode=True)
+        soup = BeautifulSoup(html, features="html5lib")
+        return str(soup)
 
 def get_text(email_object):
     """
@@ -168,6 +186,10 @@ def parse_message(gmail_message):
     if not text:
         logger.warn(t.red("No text"))
 
+    html = get_html(email_object)
+    if not html:
+        logger.warn(t.red("No html"))
+
     return {
         'message_id': message_id,
         'message_labels': message_labels,
@@ -176,7 +198,9 @@ def parse_message(gmail_message):
         'message_subject': message_subject,
         'message_date': message_date,
         'serialized_json': str(gmail_message),
-        'text': text
+        'text': text,
+        'html': html,
+        'raw': raw
     }
 
 
@@ -194,6 +218,9 @@ def download_email(message_id):
         sender, created = SenderMetadata.get_or_create(
             email_address=sender_email_address,
             email_url=sender_email_address.split('@')[1])
+
+        for url in e.get_image_urls():
+            Image.get_or_create(url=url, email=e)
         e.sender = sender
         e.save()
 
@@ -209,8 +236,12 @@ def download_all_to_database():
     # Re-create 'emails.db' sqlite database
     db = SqliteDatabase('emails.db')
     logger.info("Created database 'emails.db'")
-    Email.create_table()
-    SenderMetadata.create_table()
+
+    db.create_tables([
+        Email,
+        SenderMetadata,
+        Image
+    ])
 
     # Download Emails
     logger.info("Downloading emails to database.")

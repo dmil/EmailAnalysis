@@ -18,6 +18,7 @@ extraction = "*"
 pytesseract = "*"
 requests = "*"
 beautifulsoup4 = "*"
+opencv-python = "*"
 
 [requires]
 python_version = "3.7"
