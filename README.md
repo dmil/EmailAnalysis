@@ -3,6 +3,13 @@ EmailAnalysis
 
 A toolkit to use the gmail API to download and analyze emails
 
+## Requirements
+
+1. Install tesseract (for OCR)
+	```
+	brew install tesseract
+	```
+
 ## Getting Started
 
 1. Navigate to the [Google Developer console](https://console.developers.google.com/apis/credentials) and create a new project, get service account credentials for that project. Save the json file it generates as `credentials/credentials.json`.
