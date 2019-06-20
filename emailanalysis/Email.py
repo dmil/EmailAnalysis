@@ -1,7 +1,7 @@
 import re
 from peewee import *
 
-from emailanalysis.utils import logger
+from emailanalysis.utils import logger, get_image_urls_from_html
 from emailanalysis.SenderMetadata import SenderMetadata
 
 db = SqliteDatabase('emails.db')
@@ -16,6 +16,8 @@ class Email(Model):
     serialized_json = TextField(null=True, default=None)
     sender = ForeignKeyField(SenderMetadata, null=True, default=None)
     text = TextField(null=True, default=None)
+    html = TextField(null=True, default=None)
+    raw = BlobField(null=True, default=None)
 
     class Meta:
         database = db
@@ -52,6 +54,9 @@ class Email(Model):
 
         match = re.match(r'[^\s<>]*@[^\s<>]*', self.message_from)
         return match.group(0)
+
+    def get_image_urls(self):
+        return get_image_urls_from_html(self.html)
 
     def politicalnewsbot_link(self):
         return "https://mail.google.com/mail/u/2/#inbox/%s?authuser=politicalnewsbotnewyork@gmail.com" % self.message_id
