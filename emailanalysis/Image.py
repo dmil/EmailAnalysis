@@ -1,7 +1,13 @@
 from peewee import *
 
 from emailanalysis.utils import logger
+from emailanalysis.utils import get_text_from_image_url
+
 from emailanalysis.Email import Email
+
+from blessings import Terminal
+t = Terminal()
+
 
 db = SqliteDatabase('emails.db')
 
@@ -27,6 +33,18 @@ class Image(Model):
 
     def prepared(self):
         pass
+
+    def ocr(self):
+        logger.info(f"saving text for {self.id} from {self.url}")
+        try:
+            self.text = get_text_from_image_url(self.url)
+            if self.text:
+                logger.debug(f"Found Text:\n{self.text}")
+        except:
+            logger.warn(t.red('ERROR'))
+            self.text = 'ERROR'
+        self.save()
+
 
     def __str__(self):
         return "Url: %s\nText:" % (self.url, self.text)

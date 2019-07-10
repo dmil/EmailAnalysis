@@ -254,14 +254,18 @@ def download_all_to_database():
             raise
         logger.info("")
 
+def ocr_images():
+    for image in Image.select():
+        image.ocr()
 
 if __name__ == '__main__':
     download_all_to_database()
+    ocr_images()
     # messages = ['14926044f4fed036', '14923a815ac3deb2', '1484f23d1fe924b0']
     # message_id = '1484f23d1fe924b0'
     # try:
     #   download_email(message_id)
-    # except Exception, e:
+    # except Exception as e:
     #   logger.error(t.red("FOUND ERROR ! %s" % message_id))
     #   logger.error(t.red( "Unexpected error: %s" % e ))
     #   raise
