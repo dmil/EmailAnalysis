@@ -25,6 +25,8 @@ from emailanalysis.Email import Email
 from emailanalysis.SenderMetadata import SenderMetadata
 from emailanalysis.Image import Image
 
+from email.header import Header, decode_header, make_header
+
 from peewee import *
 
 from emailanalysis.authenticator import authenticate_gmail_service
@@ -173,9 +175,11 @@ def parse_message(gmail_message):
     if not message_to:
         logger.warn(t.red("No message_to"))
     message_from = email_object['From']
+    message_from = str(make_header(decode_header(message_from)))
     if not message_from:
         logger.warn(t.red("No message_from"))
     message_subject = email_object['Subject']
+    message_subject = str(make_header(decode_header(message_subject)))
     if not message_subject:
         logger.warn(t.red("No message_subject"))
     message_date = parse(email_object['date'])
@@ -219,8 +223,8 @@ def download_email(message_id):
             email_address=sender_email_address,
             email_url=sender_email_address.split('@')[1])
 
-        for url in e.get_image_urls():
-            Image.get_or_create(url=url, email=e)
+        # for url in e.get_image_urls():
+        #     Image.get_or_create(url=url, email=e)
         e.sender = sender
         e.save()
 
@@ -260,7 +264,7 @@ def ocr_images():
 
 if __name__ == '__main__':
     download_all_to_database()
-    ocr_images()
+    # ocr_images()
     # messages = ['14926044f4fed036', '14923a815ac3deb2', '1484f23d1fe924b0']
     # message_id = '1484f23d1fe924b0'
     # try:

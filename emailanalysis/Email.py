@@ -12,7 +12,7 @@ class Email(Model):
     message_to = TextField(null=True, default=None)
     message_from = TextField(null=True, default=None)
     message_subject = TextField(null=True, default=None)
-    message_date = DateField(null=True, default=None)
+    message_date = DateTimeField(null=True, default=None)
     serialized_json = TextField(null=True, default=None)
     sender = ForeignKeyField(SenderMetadata, null=True, default=None)
     text = TextField(null=True, default=None)
